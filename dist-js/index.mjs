@@ -9,7 +9,7 @@ async function listenToEventIfNeeded(event) {
     }
     // We're not awaiting this Promise to prevent issues with Promise.all
     // the listener will still be registered in time.
-    appWindow.listen(event, ({ payload }) => {
+    void appWindow.listen(event, ({ payload }) => {
         const handler = handlers.get(payload.id);
         if (handler != null) {
             handler(payload.progress, payload.total);
