@@ -4,7 +4,7 @@
 	],
 	"browser": "dist-js/index.min.js",
 	"dependencies": {
-		"@tauri-apps/api": "2.0.0-rc.3"
+		"@tauri-apps/api": "2.0.0-rc.4"
 	},
 	"description": "Upload files from disk to a remote server over HTTP.",
 	"devDependencies": {
