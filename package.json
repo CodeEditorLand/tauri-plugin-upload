@@ -1,5 +1,15 @@
 {
+<<<<<<< HEAD
 	"name": "tauri-plugin-upload-api",
+=======
+	"authors": [
+		"Tauri Programme within The Commons Conservancy"
+	],
+	"browser": "dist-js/index.min.js",
+	"dependencies": {
+		"@tauri-apps/api": "2.0.0-rc.5"
+	},
+>>>>>>> 10b964fea9c3b902b1a9609ff4b5b2a93f1d2e89
 	"description": "Upload files from disk to a remote server over HTTP.",
 	"exports": {
 		"browser": "./dist-js/index.min.js",
