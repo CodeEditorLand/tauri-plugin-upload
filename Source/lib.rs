@@ -2,22 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use std::{collections::HashMap, sync::Mutex};
+
 use futures_util::TryStreamExt;
+use read_progress_stream::ReadProgressStream;
 use serde::{ser::Serializer, Serialize};
 use tauri::{
 	command,
 	plugin::{Builder as PluginBuilder, TauriPlugin},
-	Runtime, Window,
+	Runtime,
+	Window,
 };
 use tokio::{
 	fs::File,
 	io::{AsyncWriteExt, BufWriter},
 };
 use tokio_util::codec::{BytesCodec, FramedRead};
-
-use read_progress_stream::ReadProgressStream;
-
-use std::{collections::HashMap, sync::Mutex};
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -34,28 +34,30 @@ pub enum Error {
 }
 
 impl Serialize for Error {
-	fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+	fn serialize<S>(
+		&self,
+		serializer:S,
+	) -> std::result::Result<S::Ok, S::Error>
 	where
-		S: Serializer,
-	{
+		S: Serializer, {
 		serializer.serialize_str(self.to_string().as_ref())
 	}
 }
 
 #[derive(Clone, Serialize)]
 struct ProgressPayload {
-	id: u32,
-	progress: u64,
-	total: u64,
+	id:u32,
+	progress:u64,
+	total:u64,
 }
 
 #[command]
-async fn download<R: Runtime>(
-	window: Window<R>,
-	id: u32,
-	url: &str,
-	file_path: &str,
-	headers: HashMap<String, String>,
+async fn download<R:Runtime>(
+	window:Window<R>,
+	id:u32,
+	url:&str,
+	file_path:&str,
+	headers:HashMap<String, String>,
 ) -> Result<u32> {
 	let client = reqwest::Client::new();
 
@@ -76,7 +78,7 @@ async fn download<R: Runtime>(
 		file.write_all(&chunk).await?;
 		let _ = window.emit(
 			"download://progress",
-			ProgressPayload { id, progress: chunk.len() as u64, total },
+			ProgressPayload { id, progress:chunk.len() as u64, total },
 		);
 	}
 	file.flush().await?;
@@ -85,12 +87,12 @@ async fn download<R: Runtime>(
 }
 
 #[command]
-async fn upload<R: Runtime>(
-	window: Window<R>,
-	id: u32,
-	url: &str,
-	file_path: &str,
-	headers: HashMap<String, String>,
+async fn upload<R:Runtime>(
+	window:Window<R>,
+	id:u32,
+	url:&str,
+	file_path:&str,
+	headers:HashMap<String, String>,
 ) -> Result<String> {
 	// Read the file
 	let file = File::open(file_path).await?;
@@ -120,20 +122,27 @@ async fn upload<R: Runtime>(
 	}
 }
 
-fn file_to_body<R: Runtime>(id: u32, window: Window<R>, file: File) -> reqwest::Body {
-	let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
+fn file_to_body<R:Runtime>(
+	id:u32,
+	window:Window<R>,
+	file:File,
+) -> reqwest::Body {
+	let stream =
+		FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
 	let window = Mutex::new(window);
 	reqwest::Body::wrap_stream(ReadProgressStream::new(
 		stream,
 		Box::new(move |progress, total| {
-			let _ = window
-				.lock()
-				.unwrap()
-				.emit("upload://progress", ProgressPayload { id, progress, total });
+			let _ = window.lock().unwrap().emit(
+				"upload://progress",
+				ProgressPayload { id, progress, total },
+			);
 		}),
 	))
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-	PluginBuilder::new("upload").invoke_handler(tauri::generate_handler![download, upload]).build()
+pub fn init<R:Runtime>() -> TauriPlugin<R> {
+	PluginBuilder::new("upload")
+		.invoke_handler(tauri::generate_handler![download, upload])
+		.build()
 }
