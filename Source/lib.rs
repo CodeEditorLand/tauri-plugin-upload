@@ -34,10 +34,7 @@ pub enum Error {
 }
 
 impl Serialize for Error {
-	fn serialize<S>(
-		&self,
-		serializer:S,
-	) -> std::result::Result<S::Ok, S::Error>
+	fn serialize<S>(&self, serializer:S) -> std::result::Result<S::Ok, S::Error>
 	where
 		S: Serializer, {
 		serializer.serialize_str(self.to_string().as_ref())
@@ -122,21 +119,16 @@ async fn upload<R:Runtime>(
 	}
 }
 
-fn file_to_body<R:Runtime>(
-	id:u32,
-	window:Window<R>,
-	file:File,
-) -> reqwest::Body {
-	let stream =
-		FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
+fn file_to_body<R:Runtime>(id:u32, window:Window<R>, file:File) -> reqwest::Body {
+	let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
 	let window = Mutex::new(window);
 	reqwest::Body::wrap_stream(ReadProgressStream::new(
 		stream,
 		Box::new(move |progress, total| {
-			let _ = window.lock().unwrap().emit(
-				"upload://progress",
-				ProgressPayload { id, progress, total },
-			);
+			let _ = window
+				.lock()
+				.unwrap()
+				.emit("upload://progress", ProgressPayload { id, progress, total });
 		}),
 	))
 }
