@@ -8,7 +8,9 @@ interface ProgressPayload {
 }
 
 type ProgressHandler = (progress: number, total: number) => void;
+
 const handlers: Map<number, ProgressHandler> = new Map();
+
 let listening = false;
 
 async function listenToEventIfNeeded(event: string): Promise<void> {
@@ -20,6 +22,7 @@ async function listenToEventIfNeeded(event: string): Promise<void> {
 	// the listener will still be registered in time.
 	void appWindow.listen<ProgressPayload>(event, ({ payload }) => {
 		const handler = handlers.get(payload.id);
+
 		if (handler != null) {
 			handler(payload.progress, payload.total);
 		}
@@ -36,6 +39,7 @@ async function upload(
 ): Promise<string> {
 	const ids = new Uint32Array(1);
 	window.crypto.getRandomValues(ids);
+
 	const id = ids[0];
 
 	if (progressHandler != null) {
@@ -64,6 +68,7 @@ async function download(
 ): Promise<void> {
 	const ids = new Uint32Array(1);
 	window.crypto.getRandomValues(ids);
+
 	const id = ids[0];
 
 	if (progressHandler != null) {
