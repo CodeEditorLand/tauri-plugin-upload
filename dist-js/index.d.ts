@@ -11,5 +11,7 @@ declare function download(
 	progressHandler?: ProgressHandler,
 	headers?: Map<string, string>,
 ): Promise<void>;
+
 export default upload;
+
 export { download, upload };
