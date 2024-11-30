@@ -66,18 +66,22 @@ async fn download<R:Runtime>(
 	}
 
 	let response = request.send().await?;
+
 	let total = response.content_length().unwrap_or(0);
 
 	let mut file = BufWriter::new(File::create(file_path).await?);
+
 	let mut stream = response.bytes_stream();
 
 	while let Some(chunk) = stream.try_next().await? {
 		file.write_all(&chunk).await?;
+
 		let _ = window.emit(
 			"download://progress",
 			ProgressPayload { id, progress:chunk.len() as u64, total },
 		);
 	}
+
 	file.flush().await?;
 
 	Ok(id)
@@ -93,10 +97,12 @@ async fn upload<R:Runtime>(
 ) -> Result<String> {
 	// Read the file
 	let file = File::open(file_path).await?;
+
 	let file_len = file.metadata().await.unwrap().len();
 
 	// Create the request and attach the file to the body
 	let client = reqwest::Client::new();
+
 	let mut request = client
 		.post(url)
 		.header(reqwest::header::CONTENT_LENGTH, file_len)
@@ -109,6 +115,7 @@ async fn upload<R:Runtime>(
 	}
 
 	let response = request.send().await?;
+
 	if response.status().is_success() {
 		response.text().await.map_err(Into::into)
 	} else {
@@ -121,7 +128,9 @@ async fn upload<R:Runtime>(
 
 fn file_to_body<R:Runtime>(id:u32, window:Window<R>, file:File) -> reqwest::Body {
 	let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|r| r.freeze());
+
 	let window = Mutex::new(window);
+
 	reqwest::Body::wrap_stream(ReadProgressStream::new(
 		stream,
 		Box::new(move |progress, total| {
