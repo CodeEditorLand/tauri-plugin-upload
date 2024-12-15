@@ -6,12 +6,12 @@ use std::{collections::HashMap, sync::Mutex};
 
 use futures_util::TryStreamExt;
 use read_progress_stream::ReadProgressStream;
-use serde::{ser::Serializer, Serialize};
+use serde::{Serialize, ser::Serializer};
 use tauri::{
-	command,
-	plugin::{Builder as PluginBuilder, TauriPlugin},
 	Runtime,
 	Window,
+	command,
+	plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 use tokio::{
 	fs::File,
