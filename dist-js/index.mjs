@@ -29,7 +29,7 @@ async function upload(url, filePath, progressHandler, headers) {
         id,
         url,
         filePath,
-        headers: headers !== null && headers !== void 0 ? headers : {},
+        headers: headers !== null && headers !== undefined ? headers : {},
     });
 }
 /// Download file from given url.
@@ -48,7 +48,7 @@ async function download(url, filePath, progressHandler, headers) {
         id,
         url,
         filePath,
-        headers: headers !== null && headers !== void 0 ? headers : {},
+        headers: headers !== null && headers !== undefined ? headers : {},
     });
 }
 
